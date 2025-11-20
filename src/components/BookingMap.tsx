@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -37,19 +37,12 @@ interface BookingMapProps {
 }
 
 function MapClickHandler({ onLocationSelect, hasPickup }: { onLocationSelect: BookingMapProps["onLocationSelect"]; hasPickup: boolean }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    const handleClick = (e: L.LeafletMouseEvent) => {
+  useMapEvents({
+    click(e) {
       const type = hasPickup ? "destination" : "pickup";
       onLocationSelect(e.latlng.lat, e.latlng.lng, type);
-    };
-    
-    map.on("click", handleClick);
-    return () => {
-      map.off("click", handleClick);
-    };
-  }, [map, onLocationSelect, hasPickup]);
+    },
+  });
   
   return null;
 }
