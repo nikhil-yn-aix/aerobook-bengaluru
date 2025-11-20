@@ -9,6 +9,7 @@ import BookingConfirmation from "@/components/BookingConfirmation";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MapPin, Navigation, Zap } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
 
 interface Location {
   lat: number;
@@ -130,6 +131,9 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/80 relative overflow-hidden">
+      <div className="absolute top-4 right-4 z-20">
+        <ModeToggle />
+      </div>
       {/* Animated background effect */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary))_0%,transparent_50%)] opacity-10 animate-pulse-glow"></div>
       
@@ -150,7 +154,7 @@ export default function Index() {
         <div className="grid lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
           {/* Left Panel - Map */}
           <Card className="p-4 bg-card/80 backdrop-blur-md border-primary/20 shadow-xl animate-slide-up">
-            <div className="h-[600px]">
+            <div className="h-[600px] relative">
               <BookingMap
                 onLocationSelect={handleLocationSelect}
                 pickupLocation={pickupLocation}
