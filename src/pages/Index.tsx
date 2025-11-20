@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MapPin, Navigation, Zap } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
+import LocationSearch from "@/components/LocationSearch";
 
 interface Location {
   lat: number;
@@ -193,6 +194,10 @@ export default function Index() {
 
           {/* Right Panel - Booking Details */}
           <div className="space-y-4 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+            <Card className="p-6 bg-card/80 backdrop-blur-md border-primary/20 shadow-xl">
+              <LocationSearch onLocationSelect={handleLocationSelect} />
+            </Card>
+
             <Card className="p-6 bg-card/80 backdrop-blur-md border-primary/20 shadow-xl">
               <TierSelector
                 selectedTier={selectedTier}

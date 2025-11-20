@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import Search from "./Search";
 
 // Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -74,8 +73,6 @@ export default function BookingMap({ onLocationSelect, pickupLocation, destinati
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        <Search />
-
         <MapClickHandler 
           onLocationSelect={onLocationSelect} 
           hasPickup={!!pickupLocation} 
