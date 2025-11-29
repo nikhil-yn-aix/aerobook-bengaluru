@@ -1,73 +1,111 @@
-# Welcome to your Lovable project
+# SkyTaxi - Flying Taxi Booking in Bengaluru
 
-## Project info
+SkyTaxi is a futuristic web application for booking autonomous flying taxis in Bengaluru. Built with React, Vite, and Tailwind CSS, it features an interactive map for route selection, fare estimation, and real-time booking simulation powered by Supabase.
 
-**URL**: https://lovable.dev/projects/8868b6bf-343e-4213-9ff2-1d73f26bca81
+## Features
 
-## How can I edit this code?
+-   **Interactive Map**: Select pickup and destination locations using a Leaflet-based map.
+-   **Route Visualization**: Visualizes the flight path between selected points.
+-   **Fare & Time Estimation**: Automatically calculates distance, estimated flight time, and fare based on the selected tier.
+-   **Multiple Service Tiers**:
+    -   **Solo Pod**: Quick personal commute (1 Passenger).
+    -   **Standard Pod**: Efficient and affordable (4 Passengers).
+    -   **Premium Pod**: Comfort with faster response (6 Passengers).
+    -   **Executive Pod**: Luxury experience (4 Passengers).
+-   **Booking System**: Simulates booking requests and stores them in a Supabase database.
+-   **Responsive Design**: Fully responsive UI built with Tailwind CSS and shadcn/ui.
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+-   **Frontend**: React, TypeScript, Vite
+-   **Styling**: Tailwind CSS, shadcn/ui
+-   **Map**: React Leaflet, Leaflet
+-   **Backend/Database**: Supabase
+-   **State Management**: React Hooks
+-   **Icons**: Lucide React
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8868b6bf-343e-4213-9ff2-1d73f26bca81) and start prompting.
+## Prerequisites
 
-Changes made via Lovable will be committed automatically to this repo.
+Before you begin, ensure you have the following installed:
+-   [Node.js](https://nodejs.org/) (v18 or higher) or [Bun](https://bun.sh/)
+-   A [Supabase](https://supabase.com/) account
 
-**Use your preferred IDE**
+## Installation & Setup
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1.  **Clone the repository**
+    ```bash
+    git clone <repository-url>
+    cd aerobook-bengaluru
+    ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2.  **Install dependencies**
+    ```bash
+    npm install
+    # or
+    bun install
+    ```
 
-Follow these steps:
+3.  **Environment Configuration**
+    Create a `.env` file in the root directory (if it doesn't exist) and add your Supabase credentials:
+    ```env
+    VITE_SUPABASE_PROJECT_ID="your-project-id"
+    VITE_SUPABASE_PUBLISHABLE_KEY="your-publishable-key"
+    VITE_SUPABASE_URL="your-supabase-url"
+    ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+4.  **Database Setup**
+    You need to create the `bookings` table in your Supabase project. Run the following SQL query in your Supabase SQL Editor:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+    ```sql
+    create table public.bookings (
+      id uuid not null default gen_random_uuid (),
+      created_at timestamp with time zone not null default now(),
+      pickup_lat double precision not null,
+      pickup_lng double precision not null,
+      destination_lat double precision not null,
+      destination_lng double precision not null,
+      distance_km double precision not null,
+      fare double precision not null,
+      tier text not null,
+      pod_id text not null,
+      estimated_arrival_minutes integer not null,
+      estimated_flight_minutes integer not null,
+      user_name text null,
+      user_contact text null,
+      status text not null,
+      constraint bookings_pkey primary key (id)
+    ) tablespace pg_default;
+    ```
+    *(Alternatively, check `supabase/migrations` for the migration file)*
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Running the Project
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Start the development server:
+
+```bash
 npm run dev
+# or
+bun dev
 ```
 
-**Edit a file directly in GitHub**
+Open your browser and navigate to `http://localhost:8080` (or the port shown in your terminal).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+```
+src/
+├── components/         # React components
+│   ├── ui/             # Reusable UI components (shadcn/ui)
+│   ├── BookingMap.tsx  # Map component with route visualization
+│   ├── TierSelector.tsx# Taxi tier selection logic
+│   └── ...
+├── pages/
+│   └── Index.tsx       # Main landing page and booking flow
+├── lib/                # Utilities
+├── hooks/              # Custom React hooks
+└── integrations/       # External service integrations (Supabase)
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## License
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/8868b6bf-343e-4213-9ff2-1d73f26bca81) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This project is open source and available under the [MIT License](LICENSE).
