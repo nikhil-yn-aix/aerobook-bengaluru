@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from "react-leaflet";
+import { useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -30,39 +30,67 @@ const createGlowingIcon = (color: string) => {
   });
 };
 
-interface BookingMapProps {
-  onLocationSelect: (lat: number, lng: number, type: "pickup" | "destination") => void;
-  pickupLocation: { lat: number; lng: number } | null;
-  destinationLocation: { lat: number; lng: number } | null;
+interface Stop {
+  id: string;
+  query: string;
+  lat?: number;
+  lng?: number;
 }
 
-function MapClickHandler({ onLocationSelect, hasPickup }: { onLocationSelect: BookingMapProps["onLocationSelect"]; hasPickup: boolean }) {
-  useMapEvents({
-    click(e) {
-      const type = hasPickup ? "destination" : "pickup";
-      onLocationSelect(e.latlng.lat, e.latlng.lng, type);
-    },
-  });
-  
+interface BookingMapProps {
+  stops: Stop[];
+}
+
+function MapUpdater({ locatedStops }: { locatedStops: Stop[] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (locatedStops.length > 0) {
+      const bounds = L.latLngBounds(locatedStops.map(s => [s.lat!, s.lng!]));
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [locatedStops, map]);
+
   return null;
 }
 
-export default function BookingMap({ onLocationSelect, pickupLocation, destinationLocation }: BookingMapProps) {
-  const [mapKey, setMapKey] = useState(0);
+export default function BookingMap({ stops }: BookingMapProps) {
   const bengaluruCenter: [number, number] = [12.9716, 77.5946];
-
-  useEffect(() => {
-    // Force re-render when locations change to update polyline
-    setMapKey(prev => prev + 1);
-  }, [pickupLocation, destinationLocation]);
+  const locatedStops = stops.filter(s => s.lat && s.lng);
 
   const pickupIcon = createGlowingIcon("#00f2ff");
   const destinationIcon = createGlowingIcon("#a855f7");
+  const stopIcon = createGlowingIcon("#ffffff");
+
+  const getStatus = () => {
+    const locatedCount = locatedStops.length;
+    if (locatedCount === 0) {
+      return (
+        <span className="flex items-center gap-2">
+          <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+          Add a pickup location to start
+        </span>
+      );
+    } else if (locatedCount === 1) {
+      return (
+        <span className="flex items-center gap-2">
+          <span className="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
+          Add a destination
+        </span>
+      );
+    } else {
+      return (
+        <span className="flex items-center gap-2">
+          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+          Route ready for booking!
+        </span>
+      );
+    }
+  };
 
   return (
     <div className="relative h-full w-full rounded-xl overflow-hidden border-2 border-primary/30 shadow-lg shadow-primary/20">
       <MapContainer
-        key={mapKey}
         center={bengaluruCenter}
         zoom={12}
         className="h-full w-full"
@@ -73,25 +101,21 @@ export default function BookingMap({ onLocationSelect, pickupLocation, destinati
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        <MapClickHandler 
-          onLocationSelect={onLocationSelect} 
-          hasPickup={!!pickupLocation} 
-        />
+        <MapUpdater locatedStops={locatedStops} />
+
+        {locatedStops.map((stop, index) => {
+          let icon = stopIcon;
+          if (index === 0) icon = pickupIcon;
+          if (index === locatedStops.length - 1 && locatedStops.length > 1) icon = destinationIcon;
+
+          return (
+            <Marker key={stop.id} position={[stop.lat!, stop.lng!]} icon={icon} />
+          );
+        })}
         
-        {pickupLocation && (
-          <Marker position={[pickupLocation.lat, pickupLocation.lng]} icon={pickupIcon} />
-        )}
-        
-        {destinationLocation && (
-          <Marker position={[destinationLocation.lat, destinationLocation.lng]} icon={destinationIcon} />
-        )}
-        
-        {pickupLocation && destinationLocation && (
+        {locatedStops.length > 1 && (
           <Polyline
-            positions={[
-              [pickupLocation.lat, pickupLocation.lng],
-              [destinationLocation.lat, destinationLocation.lng],
-            ]}
+            positions={locatedStops.map(s => [s.lat!, s.lng!])}
             pathOptions={{
               color: "#00f2ff",
               weight: 3,
@@ -104,22 +128,7 @@ export default function BookingMap({ onLocationSelect, pickupLocation, destinati
       
       <div className="absolute top-4 left-4 z-[1000] bg-card/90 backdrop-blur-md px-4 py-2 rounded-lg border border-primary/20 shadow-lg">
         <p className="text-sm text-foreground font-medium">
-          {!pickupLocation ? (
-            <span className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-              Click to set pickup location
-            </span>
-          ) : !destinationLocation ? (
-            <span className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
-              Click to set destination
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              Route ready!
-            </span>
-          )}
+          {getStatus()}
         </p>
       </div>
     </div>

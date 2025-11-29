@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# SkyTaxi - Flying Taxi Booking
 
 ## Project info
 

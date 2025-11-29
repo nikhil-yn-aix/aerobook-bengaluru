@@ -12,21 +12,29 @@ import { MapPin, Navigation, Zap } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import LocationSearch from "@/components/LocationSearch";
 
-interface Location {
-  lat: number;
-  lng: number;
+interface Stop {
+  id: string;
+  query: string;
+  lat?: number;
+  lng?: number;
 }
 
 export default function Index() {
-  const [pickupLocation, setPickupLocation] = useState<Location | null>(null);
-  const [destinationLocation, setDestinationLocation] = useState<Location | null>(null);
+  const [stops, setStops] = useState<Stop[]>([
+    { id: 'pickup', query: '' },
+    { id: 'destination', query: '' },
+  ]);
   const [selectedTier, setSelectedTier] = useState("standard");
   const [userName, setUserName] = useState("");
   const [userContact, setUserContact] = useState("");
   const [isBooking, setIsBooking] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState<any>(null);
 
-  const calculateDistance = (loc1: Location, loc2: Location): number => {
+  const handleStopsChange = (newStops: Stop[]) => {
+    setStops(newStops);
+  };
+
+  const calculateDistance = (loc1: {lat: number, lng: number}, loc2: {lat: number, lng: number}): number => {
     const R = 6371; // Earth's radius in km
     const dLat = ((loc2.lat - loc1.lat) * Math.PI) / 180;
     const dLon = ((loc2.lng - loc1.lng) * Math.PI) / 180;
@@ -40,34 +48,41 @@ export default function Index() {
     return R * c;
   };
 
-  const handleLocationSelect = (lat: number, lng: number, type: "pickup" | "destination") => {
-    if (type === "pickup") {
-      setPickupLocation({ lat, lng });
-      toast.success("Pickup location set!", {
-        description: "Now select your destination",
-      });
-    } else {
-      setDestinationLocation({ lat, lng });
-      toast.success("Destination set!", {
-        description: "Ready to calculate fare",
-      });
+  const calculateTotalDistance = (stops: Stop[]): number => {
+    let totalDistance = 0;
+    const locatedStops = stops.filter(s => s.lat && s.lng);
+    if (locatedStops.length < 2) {
+      return 0;
     }
+
+    for (let i = 0; i < locatedStops.length - 1; i++) {
+      const legStart = { lat: locatedStops[i].lat!, lng: locatedStops[i].lng! };
+      const legEnd = { lat: locatedStops[i + 1].lat!, lng: locatedStops[i + 1].lng! };
+      totalDistance += calculateDistance(legStart, legEnd);
+    }
+    return totalDistance;
   };
 
-  const distance =
-    pickupLocation && destinationLocation
-      ? calculateDistance(pickupLocation, destinationLocation)
-      : null;
+  const distance = calculateTotalDistance(stops);
 
   const selectedTierData = taxiTiers.find((t) => t.id === selectedTier)!;
   const fare = distance ? distance * selectedTierData.pricePerKm : null;
-  
+
   // Flight time: Assuming average speed of 120 km/h for flying taxis
   const flightTime = distance ? Math.ceil((distance / 120) * 60) : null;
 
   const handleBooking = async () => {
-    if (!pickupLocation || !destinationLocation || !distance || !fare || !flightTime) {
-      toast.error("Please set both pickup and destination locations");
+    const locatedStops = stops.filter(s => s.lat && s.lng);
+    if (locatedStops.length < 2) {
+      toast.error("Please set at least a pickup and a destination location");
+      return;
+    }
+
+    const pickupLocation = { lat: locatedStops[0].lat!, lng: locatedStops[0].lng! };
+    const destinationLocation = { lat: locatedStops[locatedStops.length - 1].lat!, lng: locatedStops[locatedStops.length - 1].lng! };
+
+    if (!distance || !fare || !flightTime) {
+      toast.error("Please set valid locations for all stops.");
       return;
     }
 
@@ -119,8 +134,10 @@ export default function Index() {
 
   const handleNewBooking = () => {
     setBookingConfirmed(null);
-    setPickupLocation(null);
-    setDestinationLocation(null);
+    setStops([
+      { id: 'pickup', query: '' },
+      { id: 'destination', query: '' },
+    ]);
     setSelectedTier("standard");
     setUserName("");
     setUserContact("");
@@ -156,14 +173,10 @@ export default function Index() {
           {/* Left Panel - Map */}
           <Card className="p-4 bg-card/80 backdrop-blur-md border-primary/20 shadow-xl animate-slide-up">
             <div className="h-[600px] relative">
-              <BookingMap
-                onLocationSelect={handleLocationSelect}
-                pickupLocation={pickupLocation}
-                destinationLocation={destinationLocation}
-              />
+              <BookingMap stops={stops} />
             </div>
             
-            {distance && (
+            {distance > 0 && (
               <div className="mt-4 p-4 bg-primary/10 rounded-lg border border-primary/20">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
@@ -195,7 +208,7 @@ export default function Index() {
           {/* Right Panel - Booking Details */}
           <div className="space-y-4 animate-slide-up" style={{ animationDelay: "0.1s" }}>
             <Card className="p-6 bg-card/80 backdrop-blur-md border-primary/20 shadow-xl">
-              <LocationSearch onLocationSelect={handleLocationSelect} />
+              <LocationSearch onStopsChange={handleStopsChange} />
             </Card>
 
             <Card className="p-6 bg-card/80 backdrop-blur-md border-primary/20 shadow-xl">
@@ -236,7 +249,7 @@ export default function Index() {
 
             <Button
               onClick={handleBooking}
-              disabled={!pickupLocation || !destinationLocation || isBooking}
+              disabled={stops.filter(s => s.lat && s.lng).length < 2 || isBooking}
               className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-lg shadow-primary/40 transition-all hover:scale-[1.02] disabled:opacity-50"
               size="lg"
             >
