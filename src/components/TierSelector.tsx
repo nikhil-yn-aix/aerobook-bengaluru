@@ -9,9 +9,19 @@ export interface TaxiTier {
   waitTime: number;
   description: string;
   icon: string;
+  maxPassengers: number;
 }
 
 export const taxiTiers: TaxiTier[] = [
+  {
+    id: "solo",
+    name: "Solo Pod",
+    pricePerKm: 30,
+    waitTime: 2,
+    description: "Quick personal commute",
+    icon: "🛸",
+    maxPassengers: 1,
+  },
   {
     id: "standard",
     name: "Standard Pod",
@@ -19,6 +29,7 @@ export const taxiTiers: TaxiTier[] = [
     waitTime: 8,
     description: "Efficient and affordable sky travel",
     icon: "🚁",
+    maxPassengers: 4,
   },
   {
     id: "premium",
@@ -27,6 +38,7 @@ export const taxiTiers: TaxiTier[] = [
     waitTime: 5,
     description: "Comfort with faster response time",
     icon: "✈️",
+    maxPassengers: 6,
   },
   {
     id: "executive",
@@ -34,7 +46,8 @@ export const taxiTiers: TaxiTier[] = [
     pricePerKm: 150,
     waitTime: 2,
     description: "Luxury experience with priority service",
-    icon: "🛸",
+    icon: "🚀",
+    maxPassengers: 4,
   },
 ];
 
@@ -85,6 +98,9 @@ export default function TierSelector({ selectedTier, onTierSelect, distance }: T
                       </Badge>
                       <Badge variant="outline" className="text-xs">
                         ~{tier.waitTime} min wait
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {tier.maxPassengers} Passenger{tier.maxPassengers > 1 ? 's' : ''}
                       </Badge>
                     </div>
                   </div>

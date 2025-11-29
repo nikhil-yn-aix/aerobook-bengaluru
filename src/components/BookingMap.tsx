@@ -126,7 +126,7 @@ export default function BookingMap({ stops }: BookingMapProps) {
         )}
       </MapContainer>
       
-      <div className="absolute top-4 left-4 z-[1000] bg-card/90 backdrop-blur-md px-4 py-2 rounded-lg border border-primary/20 shadow-lg">
+      <div className="absolute top-4 right-4 z-[1000] bg-card/90 backdrop-blur-md px-4 py-2 rounded-lg border border-primary/20 shadow-lg">
         <p className="text-sm text-foreground font-medium">
           {getStatus()}
         </p>
