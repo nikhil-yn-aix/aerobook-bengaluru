@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-# SkyTaxi - Flying Taxi Booking
-=======
+
 # SkyTaxi - Flying Taxi Booking in Bengaluru
->>>>>>> main
 
 SkyTaxi is a futuristic web application for booking autonomous flying taxis in Bengaluru. Built with React, Vite, and Tailwind CSS, it features an interactive map for route selection, fare estimation, and real-time booking simulation powered by Supabase.
 
